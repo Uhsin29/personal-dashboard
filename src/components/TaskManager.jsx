@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
-function TaskManager() {
+function TaskManager({ tasks, setTasks }) {
   const [task, setTask] = useState("");
-  const [tasks, setTasks] = useState([]);
+  // const [tasks, setTasks] = useState([]);
   const [dueDate, setDueDate] = useState("");
 
   useEffect(() => {
@@ -51,37 +51,24 @@ function TaskManager() {
   });
 
 function getDueStatus(task) {
-  if (!task.dueDate) {
-    return { label: "", color: "gray" };
-  }
+  if (!task.dueDate) return { label: "", color: "gray" };
 
   const today = new Date().setHours(0, 0, 0, 0);
-  const due = new Date(task.dueDate).setHours(0, 0, 0, 0);
-  const diff = (due - today) / (1000 * 60 * 60 * 24);
 
+  // FIX: parse date as local, not UTC
+  const [year, month, day] = task.dueDate.split("-");
+  const due = new Date(year, month - 1, day).setHours(0, 0, 0, 0);
+
+  const diff = (due - today) / (1000 * 60 * 60 * 24);
   const base = `(Due: ${task.dueDate})`;
 
-  if (task.completed) {
-    return { label: `Completed ${base}`, color: "green" };
-  }
+  if (task.completed) return { label: `Completed ${base}`, color: "green" };
+  if (diff < 0) return { label: `Overdue ${base}`, color: "red" };
+  if (diff === 0) return { label: `Due Today ${base}`, color: "orange" };
+  if (diff === 1) return { label: `Due Tomorrow ${base}`, color: "orange" };
 
-  if (diff < 0) {
-    return { label: `Overdue ${base}`, color: "red" };
-  }
-
-  if (diff === 0) {
-    return { label: `Due Today ${base}`, color: "orange" };
-  }
-
-  if (diff === 1) {
-    return { label: `Due Tomorrow ${base}`, color: "orange" };
-  }
-
-  return { label: `In ${diff} days ${base}`, color: "gray" };
+  return { label: `Due in ${diff} days ${base}`, color: "gray" };
 }
-
-
-
 
   return (
     <div>

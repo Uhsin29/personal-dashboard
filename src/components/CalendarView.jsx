@@ -19,13 +19,20 @@ function CalendarView({ tasks }) {
     days.push(i);
   }
 
-  // Helper: tasks for a specific date
+  // ⭐ FIXED: Match TaskManager's local date parsing
   function getTasksForDay(day) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-      day
-    ).padStart(2, "0")}`;
+    // Calendar cell date (local)
+    const cellDate = new Date(year, month, day).setHours(0, 0, 0, 0);
 
-    return tasks.filter((t) => t.dueDate === dateStr);
+    return tasks.filter((t) => {
+      if (!t.dueDate) return false;
+
+      // Parse task date as local (same fix as TaskManager)
+      const [y, m, d] = t.dueDate.split("-");
+      const taskDate = new Date(y, m - 1, d).setHours(0, 0, 0, 0);
+
+      return taskDate === cellDate;
+    });
   }
 
   // Navigation
@@ -70,6 +77,7 @@ function CalendarView({ tasks }) {
                 border: "1px solid #ccc",
                 padding: "5px",
                 background: isToday ? "#ffeeba" : "white",
+                minHeight: "70px",
               }}
             >
               <strong>{day}</strong>
